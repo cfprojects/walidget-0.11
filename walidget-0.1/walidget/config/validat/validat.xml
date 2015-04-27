@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	This XML file defines validation rules and data sets for a Validat object.
+ -->
+<validat>
+
+	<!-- validation rule definitions -->
+	<validationRules>
+
+		<!-- The validateCfIsValid validator can be used for many different types of rules -->
+		<rule name="datetime" validator="validateCfIsValid">
+			<arg name="type" value="date" />
+		</rule>
+		<rule name="date" validator="validateCfIsValid">
+			<arg name="type" value="USdate" />
+		</rule>
+		<rule name="integer" validator="validateCfIsValid">
+			<arg name="type" value="integer" />
+		</rule>
+		<rule name="alpha" validator="validateCfIsValid">
+			<arg name="type" value="regex" />
+			<arg name="pattern" value="^[A-Za-z]*$" />
+		</rule>
+		<rule name="alphaNumeric" validator="validateCfIsValid">
+			<arg name="type" value="regex" />
+			<arg name="pattern" value="^\w*$" />
+		</rule>
+		<rule name="currency" validator="validateCfIsValid">
+			<arg name="type" value="regex" />
+			<arg name="pattern" value="^-?\d+(\.\d\d)?$" />
+		</rule>
+
+		<!-- All name elements in our system have the same min and max length, so define the min and max length in a rule -->
+		<rule name="nameLength" validator="validateLength">
+			<arg name="min" value="1" />
+			<arg name="max" value="50" />
+		</rule>
+
+		<!-- Use the validateCfIsValid validator for validating numeric values within a range -->
+		<rule name="quantityRange" validator="validateCfIsValid">
+			<arg name="type" value="range" />
+			<arg name="min" value="0" />
+			<arg name="max" value="999999" />
+		</rule>
+
+		<!-- Use the validateRange validator for validating non-numeric values within a range -->
+		<rule name="standardDateRange" validator="validateRange">
+			<arg name="min" value="1970-01-01 00:00:00" />
+			<arg name="max" value="2099-12-31 23:59:59" />
+		</rule>
+
+		<!-- These compare2 rules validate the value of one data element compared to the value of a second data element -->
+		<rule name="compare2numbers" validator="validateCompare2Numbers" />
+		<rule name="compare2dates" validator="validateCompare2Dates">
+			<arg name="datepart" value="d" />
+		</rule>
+		<rule name="compare2datetimes" validator="validateCompare2Dates">
+			<arg name="datepart" value="s" />
+		</rule>
+		<rule name="compare2stringsWithCase" validator="validateCompare2Strings">
+			<arg name="caseSensitive" value="true" />
+		</rule>
+		<rule name="compare2stringsWithoutCase" validator="validateCompare2Strings">
+			<arg name="caseSensitive" value="false" />
+		</rule>
+
+		<!-- This rule validates the value of a data element compared to today's date -->
+		<rule name="compareToday" validator="validateCompareDateExpr">
+			<arg name="datepart" value="d" />
+			<arg name="expression" value="Now()" />
+		</rule>
+		
+	</validationRules>
+	
+	<!-- data set definitions -->
+	<dataSets>
+
+		<dataSet name="widget.Widget">
+			<dataElement name="Name" required="true" message="Widget name is required.">
+				<assert rule="nameLength">
+					<message name="invalid" value="The widget name can be no longer than 50 characters." />
+				</assert>
+			</dataElement>
+			<dataElement name="WidgetType" required="true" message="Widget type is required." />
+			<dataElement name="Quantity" required="false">
+				<assert rule="integer">
+					<message name="invalid" value="The quantity must be an integer." />
+				</assert>
+				<assert rule="quantityRange">
+					<message name="invalid" value="The quantity must be between 0 and 999999." />
+				</assert>
+			</dataElement>
+			<dataElement name="OrderDate" required="false">
+				<assert rule="datetime">
+					<message name="invalid" value="The order date must be a valid date/time." />
+				</assert>
+				<assert rule="standardDateRange">
+					<message name="invalid" value="The entry date must be between 1970 and 2099." />
+				</assert>
+				<assert rule="compareToday">
+					<arg name="operator" value="lte" />
+					<message name="invalid" value="The order date must not be a future date." />
+				</assert>
+			</dataElement>
+			<dataElement name="ShipDate" required="false">
+				<assert rule="datetime">
+					<message name="invalid" value="The ship date must be a valid date/time." />
+				</assert>
+				<assert rule="standardDateRange">
+					<message name="invalid" value="The ship date must be between 1970 and 2099." />
+				</assert>
+				<assert rule="compare2datetimes">
+					<arg name="resultIfSecondValueMissing" value="noOrderDate" />
+					<arg name="operator" value="gte" />
+					<depend name="secondValue" value="OrderDate" />
+					<message name="invalid" value="The ship date must on or after the order date." />
+					<message name="noOrderDate" value="The ship date must not be provided without an order date." />
+				</assert>
+			</dataElement>
+			<dataElement name="DateLastUpdated" required="false">
+				<assert rule="datetime">
+					<message name="invalid" value="The date last updated must be a valid date/time." />
+				</assert>
+			</dataElement>
+		</dataSet>
+
+		<dataSet name="widget.WidgetCategory">
+			<dataElement name="name" required="true" message="Category name is required.">
+				<assert rule="nameLength">
+					<message name="invalid" value="The category name can be no longer than 50 characters." />
+				</assert>
+			</dataElement>
+		</dataSet>
+		
+		<dataSet name="widget.WidgetType">
+			<dataElement name="name" required="true" message="Type name is required.">
+				<assert rule="nameLength">
+					<message name="invalid" value="The type name can be no longer than 50 characters." />
+				</assert>
+			</dataElement>
+			<dataElement name="EntryDate" required="false">
+				<assert rule="datetime">
+					<message name="invalid" value="The entry date must be a valid date/time." />
+				</assert>
+				<assert rule="standardDateRange">
+					<message name="invalid" value="The entry date must be between 1970 and 2099." />
+				</assert>
+			</dataElement>
+			<dataElement name="DateLastUpdated" required="false">
+				<assert rule="datetime">
+					<message name="invalid" value="The date last updated must be a valid date/time." />
+				</assert>
+			</dataElement>
+		</dataSet>
+	
+	</dataSets>
+
+</validat>

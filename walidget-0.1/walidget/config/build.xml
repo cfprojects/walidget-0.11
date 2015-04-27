@@ -1,0 +1,27 @@
+<project name="walidget" default="clean" basedir="..">
+	
+	<!-- Properties section -->
+	
+	<!-- Resource collection section -->
+		
+	<patternset id="app.project.dirty.files" description="Application files to remove on cleaning">
+		<!-- Model-Glue scaffolds.xml -->
+		<include name="config/ModelGlue/scaffolds/Scaffolds.xml" />
+		<!-- Model-Glue generated views -->
+		<include name="views/generated/*.cfm" />
+		<!-- Transfer generated definitions -->
+		<include name="model/data/transfer/definitions/*.transfer" />
+	</patternset>
+	
+	<!-- Target definition section -->
+
+	<!-- Clean-up targets -->
+	<target name="clean" description="Delete and re-create the project build directory.">
+		<delete>
+			<fileset dir="." casesensitive="false">
+				<patternset refid="app.project.dirty.files" />
+			</fileset>
+		</delete>
+	</target>
+		
+</project>

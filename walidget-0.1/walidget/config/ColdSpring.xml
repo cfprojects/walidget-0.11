@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" -->
+<beans>
+  
+	<!-- Beans defined in this file are available inside and outside of the Model-Glue framework -->
+	
+
+	<!-- CONFIGURATION BEANS -->
+
+	<bean id="transferConfiguration" class="transfer.com.config.Configuration">
+		<constructor-arg name="datasourcePath"><value>/walidget/config/transfer/Datasource.xml</value></constructor-arg>
+		<constructor-arg name="configPath"><value>/walidget/config/transfer/Transfer.xml</value></constructor-arg>
+		<constructor-arg name="definitionPath"><value>/walidget/model/data/transfer/definitions</value></constructor-arg>
+	</bean>
+
+	<bean id="dbAuditServiceConfiguration" class="walidget.model.logging.simpledb.AuditServiceConfiguration">
+		<property name="datasource"><ref bean="datasource" /></property>
+		<property name="tableName"><value>WidgetAuditLog</value></property>
+		<property name="messageColumnName"><value>message</value></property>
+		<property name="maxMessageLength"><value>50</value></property>
+		<property name="detailColumnName"><value>detail</value></property>
+		<property name="maxDetailLength"><value>200</value></property>
+		<property name="sessionIdColumnName"><value>sessionId</value></property>
+		<property name="maxSessionIdLength"><value>20</value></property>
+		<property name="remoteAddressColumnName"><value>remoteAddress</value></property>
+		<property name="maxRemoteAddressLength"><value>15</value></property>
+		<property name="timestampColumnName"><value>eventDateTime</value></property>
+	</bean>
+
+
+	<!-- BEAN SELECTOR ALIASES  -->
+
+	<!-- Beans that need a datasource may use the DatasourceAdapter connected to our Transfer factory -->
+	<alias alias="datasource" name="transferDatasourceAdapter" />
+	
+	<!-- Available choices for auditService: nullAuditService, cflogAuditService, dbAuditService -->
+	<alias alias="auditService" name="dbAuditService" />
+	
+
+	<!-- Environment-specific configuration should not be needed below this line -->
+	
+	<!-- SERVICES AND TRANSIENT BEANS -->
+	
+	<!-- Transfer ORM -->
+	
+	<bean id="transferFactory" class="transfer.TransferFactory">
+		<constructor-arg name="configuration"><ref bean="transferConfiguration" /></constructor-arg>
+	</bean>
+
+	<bean id="transfer" factory-bean="transferFactory" factory-method="getTransfer" />
+
+	<!-- Use an adapter bean to provide datasource information from Transfer to other beans -->
+	<bean id="transferDatasourceAdapter" class="walidget.extensions.addons.transfer.datasource.DatasourceAdapter">
+		<constructor-arg name="transferFactory"><ref bean="transferFactory" /></constructor-arg>
+	</bean>
+
+	<!-- Transfer observer beans require lazy-init="false" and also require ColdSpring to be told to construct non-lazy beans -->
+
+	<bean id="transferObserver.DateLastUpdated" class="walidget.model.data.transfer.DateLastUpdatedObserver"
+			lazy-init="false">
+		<constructor-arg name="transfer"><ref bean="transfer" /></constructor-arg>
+	</bean>
+
+	<!-- Data query gateways -->
+	
+	<bean id="widgetTypeGateway" class="walidget.model.data.WidgetTypeGateway">
+		<constructor-arg name="datasource"><ref bean="datasource" /></constructor-arg>
+	</bean>
+
+	<!-- Validation services -->
+
+	<bean id="validatFactory" class="validat.validatFactory">
+		<property name="EngineConfigXmlPath"><value>/walidget/config/validat/coldspring.xml</value></property>
+	</bean>
+ 	
+	<bean id="validatErrorCollectionAdapter" class="walidget.extensions.addons.validat.modelglue.ErrorCollectionAdapter"
+			singleton="false" />
+
+	<!-- Other services -->
+
+	<bean id="nullAuditService" class="walidget.model.logging.NullAuditService" />
+	
+	<bean id="cflogAuditService" class="walidget.model.logging.CfLogAuditService"
+			autowire="byName">
+		<property name="AuditFileName"><value>walidget</value></property>
+	</bean>
+
+	<bean id="dbAuditService" class="walidget.model.logging.simpledb.AuditService"
+			autowire="byName">
+		<constructor-arg name="configuration"><ref bean="dbAuditServiceConfiguration"/></constructor-arg>
+	</bean>
+
+	<!-- Supporting beans -->
+
+	<bean id="structLib" class="walidget.model.util.StructLib" />
+	<bean id="netLib" class="walidget.model.util.NetLib" />
+
+</beans>

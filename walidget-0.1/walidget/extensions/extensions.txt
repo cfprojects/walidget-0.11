@@ -1,0 +1,1 @@
+This is where I put extensions used by my application that are not Model-Glue controllers (which belong in the controller folder) or domain-specific models (which belong in the model folder).

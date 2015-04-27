@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<transfer
+	xsi:noNamespaceSchemaLocation="http://www.transfer-orm.com/transfer/resources/xsd/transfer.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<objectDefinitions>
+		<package name="widget">
+			<object name="Widget">
+				<id name="widgetId" type="numeric" />
+				<property name="Name" type="string" />
+				<property name="IsActive" type="boolean" />
+				<!-- For quantity, use a nullvalue of -99 so that 0 values are not recorded as null -->
+				<property name="Quantity" type="numeric" nullable="true" nullvalue="-99" />
+				<property name="OrderDate" type="date" nullable="true" />
+				<property name="ShipDate" type="date" nullable="true" />
+				<property name="DateLastUpdated" type="date" />
+				<manytoone name="WidgetColour">
+					<link column="widgetColourId" to="widget.WidgetColour" />
+				</manytoone>
+				<manytomany name="WidgetCategory" table="Widget_WidgetCategory" lazy="true">
+					<link column="widgetId" to="widget.Widget" />
+					<link column="widgetCategoryId" to="widget.WidgetCategory" />
+					<collection type="array">
+						<key property="widgetCategoryId" />
+					</collection>
+				</manytomany>
+				<function name="configure" access="private" returntype="void">
+				 	<body>
+				 		<![CDATA[
+							<!--- Set the initial Order and Ship Dates to null --->
+							<cfset setOrderDateNull() />
+							<cfset setShipDateNull() />
+				 		]]>
+				 	</body>
+				</function>
+			</object>
+			<object name="WidgetType">
+				<id name="widgetTypeId" type="numeric" />
+				<property name="Name" type="string" />
+				<property name="EntryDate" type="date" nullable="true" />
+				<property name="DateLastUpdated" type="date" />
+				<onetomany name="Widget">
+					<link column="widgetTypeId" to="widget.Widget" />
+					<collection type="struct">
+						<key property="widgetId" />
+					</collection>
+				</onetomany>
+				<function name="configure" access="private" returntype="void">
+				 	<body>
+				 		<![CDATA[
+							<!--- Set the initial Entry Date to today (without the time part) --->
+							<cfset setEntryDate(DateFormat(Now())) />
+				 		]]>
+				 	</body>
+				</function>
+			</object>
+			<object name="WidgetCategory">
+				<id name="widgetCategoryId" type="numeric" />
+				<property name="Name" type="string" />
+			</object>
+			<object name="WidgetColour">
+				<id name="widgetColourId" type="numeric" />
+				<property name="Name" type="string" />
+			</object>
+		</package>
+	</objectDefinitions>
+</transfer>

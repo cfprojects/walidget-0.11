@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE modelglue SYSTEM "http://www.web-relevant.com/ModelGlue/ModelGlue2.dtd" -->
+<modelglue>
+
+	<controllers>
+		<controller name="RequestController" type="walidget.controller.RequestController">
+			<message-listener message="onRequestStart" function="onRequestStart" />
+			<message-listener message="onQueueComplete" function="onQueueComplete" />
+			<message-listener message="onRequestEnd" function="onRequestEnd" />
+		</controller>
+		<controller name="AuditController" type="walidget.controller.AuditController">
+			<message-listener message="onRequestStart" function="logRequestStart" />
+			<message-listener message="onError" function="logError" />
+			<message-listener message="log" function="logEvent" />
+		</controller>
+		<controller name="ValidatController" type="walidget.controller.ValidatController">
+			<!-- Explicit controllers receive ModelGlue ORM messages before the implicit ModelGlue ORM controller -->
+			<message-listener message="ModelGlue.genericCommit" function="validateModelGlueCommit" />
+		</controller>
+	</controllers>
+
+	<event-handlers>
+		<scaffold object="widget.Widget">
+			<broadcasts>
+				<message name="log">
+					<argument name="detail" value="Executing an event in the widget.Widget scaffold" />
+					<argument name="properties" value="widgetId" />
+				</message>
+			</broadcasts>
+			<results>
+				<!-- validationError results must be redirected in order to stop the ORM controller from attempting a commit -->
+				<result name="validationError" do="widget.Widget.edit" redirect="true" />
+				<result do="view.template" />
+			</results>
+		</scaffold>
+		
+		<scaffold object="widget.WidgetType">
+			<broadcasts>
+				<message name="log">
+					<argument name="detail" value="Executing an event in the widget.WidgetType scaffold" />
+					<argument name="properties" value="widgetTypeId" />
+				</message>
+			</broadcasts>
+			<results>
+				<!-- validationError results must be redirected in order to stop the ORM controller from attempting a commit -->
+				<result name="validationError" do="widget.WidgetType.edit" redirect="true" />
+				<result do="view.template" />
+			</results>
+		</scaffold>
+
+		<scaffold object="widget.WidgetCategory">
+			<broadcasts>
+				<message name="log">
+					<argument name="detail" value="Executing an event in the widget.WidgetCategory scaffold" />
+					<argument name="properties" value="widgetCategoryId" />
+				</message>
+			</broadcasts>
+			<results>
+				<!-- validationError results must be redirected in order to stop the ORM controller from attempting a commit -->
+				<result name="validationError" do="widget.WidgetCategory.edit" redirect="true" />
+				<result do="view.template" />
+			</results>
+		</scaffold>
+
+		<scaffold object="widget.WidgetColour">
+			<broadcasts>
+				<message name="log">
+					<argument name="detail" value="Executing an event in the widget.WidgetColour scaffold" />
+					<argument name="properties" value="widgetColourId" />
+				</message>
+			</broadcasts>
+			<results>
+				<!-- validationError results must be redirected in order to stop the ORM controller from attempting a commit -->
+				<result name="validationError" do="widget.WidgetColour.edit" redirect="true" />
+				<result do="view.template" />
+			</results>
+		</scaffold>
+
+		<event-handler name="page.index">
+			<broadcasts /> 
+			<views>
+				<include name="body" template="dspIndex.cfm" />
+			</views>
+			<results>
+				<result do="view.template" />
+			</results>
+		</event-handler>
+
+		<event-handler name="view.template" access="private">
+			<broadcasts>
+				<message name="modelGlue.genericList">
+					<argument name="object" value="widget.WidgetType" />
+					<argument name="gatewayBean" value="widgetTypeGateway" />
+					<argument name="gatewayMethod" value="listWidgetCount" />
+					<argument name="queryName" value="widgetCountsByType" />
+				</message>
+			</broadcasts>
+			<views>
+				<include name="topNav" template="dspTopNav.cfm">
+					<value name="xe.widgetList" value="widget.widget.list" />
+					<value name="xe.widgetTypeList" value="widget.widgetType.list" />
+					<value name="xe.widgetCategoryList" value="widget.widgetCategory.list" />
+					<value name="xe.widgetColourList" value="widget.widgetColour.list" />
+				</include>
+				<include name="bottomNav" template="dspBottomNav.cfm">
+					<value name="xe.widgetTypeView" value="widget.widgetType.view" />
+				</include>
+				<include name="template" template="dspTemplate.cfm" />
+			</views>
+			<results />
+		</event-handler>
+
+		<event-handler name="exception" access="private">
+			<broadcasts>
+				<message name="onError" />
+			</broadcasts>
+			<views>
+				<include name="body" template="dspException.cfm" />
+			</views>
+		</event-handler>
+	</event-handlers>
+	
+</modelglue>

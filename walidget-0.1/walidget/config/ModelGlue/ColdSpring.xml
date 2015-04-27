@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" -->
+<beans>
+
+	<!-- Beans defined in this file are only available through the Model-Glue framework -->
+
+	<!-- CONFIGURATION BEANS -->
+
+  	<!-- This is your Model-Glue configuration -->
+	<bean id="modelGlueConfiguration" class="ModelGlue.unity.framework.ModelGlueConfiguration">
+
+		<!-- General application settings -->
+	    <property name="configurationPath"><value>config/ModelGlue/ModelGlue.xml</value></property>
+	    <property name="viewMappings"><value>/walidget/views</value></property>
+	    <property name="defaultEvent"><value>page.index</value></property>
+	    <property name="defaultExceptionHandler"><value>exception</value></property>
+	    <property name="defaultCacheTimeout"><value>5</value></property>
+
+		<!-- Development settings: be careful of using incorrect settings in a production environment -->
+	    <property name="reload"><value>false</value></property>
+	    <property name="debug"><value>true</value></property>
+
+		<!-- Change the reload key and/or password if you want to make it harder for others to reset the application -->
+	    <property name="reloadKey"><value>init</value></property>
+	    <property name="reloadPassword"><value>true</value></property>
+
+		<!-- Scaffolding settings: this part can be ignored if scaffolding is not being used -->
+	    <property name="rescaffold"><value>true</value></property>
+	    <property name="scaffoldPath"><value>config/ModelGlue/scaffolds/Scaffolds.xml</value></property>
+	    <!-- scaffoldConfigurationPath is optional and defaults to /ModelGlue/unity/config/ScaffoldingConfiguration.xml -->
+		<property name="scaffoldConfigurationPath"><value>/walidget/config/ModelGlue/ScaffoldingConfiguration.xml</value></property>
+	    <property name="generatedViewMapping"><value>/walidget/views/generated</value></property>
+	    <property name="defaultScaffolds"><value>list,edit,view,commit,delete</value></property>
+
+		<!-- These properties rarely need to be modified -->
+	    <property name="defaultTemplate"><value>index.cfm</value></property>
+	    <property name="eventValue"><value>event</value></property>
+	    <property name="statePrecedence"><value>form</value></property>	    
+	</bean>
+
+	<!-- Put definitions for your own beans and services here -->
+
+	<!-- This bean holds miscellaneous values relevant to rendering in views -->
+	<bean id="viewDefaults" class="ModelGlue.Bean.CommonBeans.SimpleConfig">
+		<property name="config">
+			<map>
+				<!-- General application settings -->
+				<entry key="applicationTitle"><value>Widget Central: Powered by Transfer + Validat</value></entry>
+				
+				<!-- Development settings: be careful of using incorrect settings in a production environment -->	
+				<entry key="suppressColdFusionDebugOutput"><value>false</value></entry>
+				<entry key="showExceptionDetail"><value>true</value></entry>
+
+				<!-- General view settings -->
+				<entry key="inputDateFormat"><value>mm/dd/yyyy</value></entry>
+				<entry key="outputDateFormat"><value>mm/dd/yy</value></entry>
+				<entry key="inputTimeFormat"><value>h:mm:ss tt</value></entry>
+				<entry key="outputTimeFormat"><value>h:mm:ss tt</value></entry>
+			</map>
+		</property>
+	</bean>
+
+	<!-- This bean provides a structure that maps resources types to URLs relative to the default template -->
+	<bean id="resourceUrls" class="coldspring.beans.factory.config.MapFactoryBean">
+		<property name="sourceMap">
+			<map>
+				<entry key="css"><value>resources/css</value></entry>
+				<entry key="images"><value>resources/images</value></entry>
+            </map>
+		</property>
+	</bean>
+
+
+	<!-- BEAN SELECTOR ALIASES  -->
+
+	<!-- Model-Glue ORM integration beans -->
+
+	<!-- ormAdapter.Transfer is the name for the standard Transfer ORM adapter bean provided by Model-Glue  -->
+	<!-- <alias alias="ormAdapter" name="ormAdapter.Transfer" /> -->
+	
+	<!-- Use a custom Transfer ORM adapter that contains a few small enhancements over the standard version -->
+	<alias alias="ormAdapter" name="ormAdapter.Transfer.walidget" />
+
+	<!-- Use the transferFactory defined in the parent factory for the ORM service -->
+	<alias alias="ormService" name="transferFactory" />
+
+
+	<!-- Environment-specific configuration should not be needed below this line -->
+	
+	<!-- SERVICES AND TRANSIENT BEANS -->
+
+	<!-- This is a custom subclass of the Transfer ORM adapter for Model-Glue -->
+	<!-- Use the original bean as a parent so that we don't have to duplicate all of its property and constructor-arg elements -->
+	<bean id="ormAdapter.Transfer.walidget" class="walidget.extensions.addons.modelglue.orm.TransferAdapter"
+			parent="ormAdapter.Transfer" />
+
+	<!-- Validat service bean -->
+	<bean id="validat" factory-bean="validatFactory" factory-method="getValidat">
+		<constructor-arg name="rulesConfigXmlPath"><value>/walidget/config/validat/validat.xml</value></constructor-arg>
+	</bean>
+	
+</beans>
